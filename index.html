@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flemingo Telecaller Attendance</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: #1a4f8e;
+            color: white;
+            padding: 25px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+        
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .logo {
+            position: absolute;
+            top: 20px;
+            left: 25px;
+            font-size: 32px;
+            font-weight: bold;
+            color: #ffcc00;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .login-section {
+            background: #f9fafc;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e1e5eb;
+        }
+        
+        .login-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            flex: 1;
+            min-width: 250px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #1a4f8e;
+            font-weight: 600;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #d1d9e6;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #1a4f8e;
+            box-shadow: 0 0 0 3px rgba(26, 79, 142, 0.2);
+        }
+        
+        .login-btn {
+            background: #1a4f8e;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 28px;
+            height: 44px;
+        }
+        
+        .login-btn:hover {
+            background: #153c6d;
+        }
+        
+        .attendance-section {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .user-panel {
+            flex: 1;
+            background: #f9fafc;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e1e5eb;
+            display: none;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .avatar {
+            width: 70px;
+            height: 70px;
+            background: #1a4f8e;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 28px;
+            margin-right: 20px;
+        }
+        
+        .user-details h2 {
+            color: #1a4f8e;
+            margin-bottom: 5px;
+        }
+        
+        .user-details p {
+            color: #666;
+        }
+        
+        .attendance-action {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        #mark-attendance {
+            background: #1a4f8e;
+            color: white;
+            border: none;
+            padding: 16px 40px;
+            font-size: 18px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(26, 79, 142, 0.3);
+        }
+        
+        #mark-attendance:hover {
+            background: #153c6d;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(26, 79, 142, 0.4);
+        }
+        
+        #mark-attendance:disabled {
+            background: #b3c5d8;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .attendance-status {
+            text-align: center;
+            margin-top: 20px;
+            min-height: 30px;
+            font-weight: 600;
+        }
+        
+        .status-success {
+            color: #28a745;
+        }
+        
+        .status-error {
+            color: #dc3545;
+        }
+        
+        .location-panel {
+            flex: 1;
+            background: #e8f0fe;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e1e5eb;
+            display: none;
+        }
+        
+        .location-info h3 {
+            color: #1a4f8e;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            font-size: 20px;
+        }
+        
+        .location-info h3 i {
+            margin-right: 10px;
+        }
+        
+        .location-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .location-detail {
+            flex: 1;
+            min-width: 200px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+        }
+        
+        .location-detail p {
+            margin: 10px 0;
+            color: #555;
+        }
+        
+        .location-detail span {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .map-container {
+            margin-top: 20px;
+            height: 200px;
+            background: #dde5f0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #1a4f8e;
+            font-weight: 600;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .static-map {
+            width: 100%;
+            height: 100%;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200" viewBox="0 0 400 200"><rect width="400" height="200" fill="%23dde5f0"/><text x="200" y="100" font-family="Arial" font-size="16" fill="%231a4f8e" text-anchor="middle">Map visualization not available</text></svg>');
+            background-size: cover;
+        }
+        
+        .office-address {
+            margin-top: 15px;
+            padding: 12px;
+            background: white;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        .attendance-history {
+            margin-top: 30px;
+            display: none;
+        }
+        
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e1e5eb;
+        }
+        
+        .history-header h2 {
+            color: #1a4f8e;
+            margin: 0;
+        }
+        
+        .download-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 14px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .download-btn:hover {
+            background: #218838;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e1e5eb;
+        }
+        
+        th {
+            background: #f1f5fb;
+            color: #1a4f8e;
+            font-weight: 600;
+        }
+        
+        tr:hover {
+            background: #f9fafc;
+        }
+        
+        .footer {
+            background: #f1f5fb;
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 14px;
+            border-top: 1px solid #e1e5eb;
+        }
+        
+        @media (max-width: 768px) {
+            .attendance-section {
+                flex-direction: column;
+            }
+            
+            .header {
+                padding: 20px 15px;
+            }
+            
+            .header h1 {
+                font-size: 22px;
+                margin-top: 10px;
+            }
+            
+            .logo {
+                position: static;
+                margin-bottom: 10px;
+            }
+            
+            .content {
+                padding: 20px 15px;
+            }
+            
+            .user-info {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .avatar {
+                margin-right: 0;
+                margin-bottom: 15px;
+            }
+            
+            .location-detail {
+                min-width: 100%;
+            }
+            
+            .history-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">FLEMINGO</div>
+            <h1>Telecaller Attendance System</h1>
+            <p>Mark your attendance with location verification</p>
+        </div>
+        
+        <div class="content">
+            <div class="login-section" id="login-section">
+                <h2><i class="fas fa-sign-in-alt"></i> Telecaller Login</h2>
+                <div class="login-form">
+                    <div class="form-group">
+                        <label for="employee-name">Full Name</label>
+                        <input type="text" id="employee-name" placeholder="Enter your full name">
+                    </div>
+                    <div class="form-group">
+                        <label for="employee-code">Employee Code</label>
+                        <input type="text" id="employee-code" placeholder="Enter your employee code">
+                    </div>
+                    <button class="login-btn" id="login-btn">Login</button>
+                </div>
+            </div>
+            
+            <div class="attendance-section">
+                <div class="user-panel" id="user-panel">
+                    <div class="user-info">
+                        <div class="avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="user-details">
+                            <h2 id="user-name">Telecaller Name</h2>
+                            <p>Employee ID: <span id="user-id">TC-2023-087</span></p>
+                            <p>Department: Sales</p>
+                        </div>
+                    </div>
+                    
+                    <div class="attendance-action">
+                        <button id="mark-attendance">
+                            <i class="fas fa-fingerprint"></i> Mark Today's Attendance
+                        </button>
+                        <div class="attendance-status" id="attendance-status"></div>
+                    </div>
+                    
+                    <div>
+                        <h3><i class="fas fa-clock"></i> Today's Status</h3>
+                        <p>Date: <span id="current-date">--/--/----</span></p>
+                        <p>Status: <span id="today-status">Not marked</span></p>
+                        <p>Time: <span id="attendance-time">--:-- --</span></p>
+                    </div>
+                </div>
+                
+                <div class="location-panel" id="location-panel">
+                    <div class="location-info">
+                        <h3><i class="fas fa-map-marker-alt"></i> Location Verification</h3>
+                        <div class="location-details">
+                            <div class="location-detail">
+                                <p><span>Status:</span> <span id="location-status">Waiting for verification</span></p>
+                                <p><span>Accuracy:</span> <span id="location-accuracy">-</span></p>
+                                <p><span>Distance from office:</span> <span id="distance">-</span></p>
+                            </div>
+                            <div class="location-detail">
+                                <p><span>Latitude:</span> <span id="latitude">-</span></p>
+                                <p><span>Longitude:</span> <span id="longitude">-</span></p>
+                                <p><span>Office Location:</span> <span>Flemingo Office, Mumbai</span></p>
+                            </div>
+                        </div>
+                        
+                        <div class="map-container">
+                            <div class="static-map"></div>
+                        </div>
+                        
+                        <div class="office-address">
+                            <i class="fas fa-building"></i> 
+                            <strong>Office Address:</strong> Infinity Square, LG – 01 to 05, Golani Naka, Vasai East, Mumbai, Maharashtra 401208
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="attendance-history" id="attendance-history">
+                <div class="history-header">
+                    <h2>Recent Attendance Records</h2>
+                    <button class="download-btn" id="download-data">
+                        <i class="fas fa-download"></i> Download Data
+                    </button>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Name</th>
+                            <th>Employee Code</th>
+                            <th>Status</th>
+                            <th>Location</th>
+                            <th>Verification</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attendance-records">
+                        <!-- Records will be added here dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>© 2023 Flemingo Telecaller Attendance System | Preventing fraudulent attendance</p>
+        </div>
+    </div>
+
+    <script>
+        // Updated office coordinates
+        const OFFICE_LAT = 19.4109519;
+        const OFFICE_LNG = 72.856783;
+        let employeeName = "";
+        let employeeCode = "";
+        let attendanceData = [];
+        let hasMarkedAttendanceToday = false;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginBtn = document.getElementById('login-btn');
+            const attendanceBtn = document.getElementById('mark-attendance');
+            const downloadBtn = document.getElementById('download-data');
+            const attendanceStatus = document.getElementById('attendance-status');
+            const locationStatus = document.getElementById('location-status');
+            const locationAccuracy = document.getElementById('location-accuracy');
+            const latitude = document.getElementById('latitude');
+            const longitude = document.getElementById('longitude');
+            const distance = document.getElementById('distance');
+            const currentDate = document.getElementById('current-date');
+            const todayStatus = document.getElementById('today-status');
+            const attendanceTime = document.getElementById('attendance-time');
+            const userName = document.getElementById('user-name');
+            const userId = document.getElementById('user-id');
+            const loginSection = document.getElementById('login-section');
+            const userPanel = document.getElementById('user-panel');
+            const locationPanel = document.getElementById('location-panel');
+            const attendanceHistory = document.getElementById('attendance-history');
+            
+            // Set current date
+            const now = new Date();
+            const today = now.toISOString().split('T')[0];
+            currentDate.textContent = now.toLocaleDateString('en-IN', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+            
+            // Load attendance data from localStorage
+            const savedData = localStorage.getItem('flemingoAttendanceData');
+            if (savedData) {
+                attendanceData = JSON.parse(savedData);
+                updateAttendanceTable();
+                
+                // Check if user has already marked attendance today
+                const employeeCodeInput = document.getElementById('employee-code');
+                employeeCodeInput.addEventListener('blur', function() {
+                    const code = this.value.trim();
+                    if (code) {
+                        hasMarkedAttendanceToday = attendanceData.some(record => 
+                            record.employeeCode === code && record.date === today
+                        );
+                    }
+                });
+            }
+            
+            // Login button event
+            loginBtn.addEventListener('click', function() {
+                employeeName = document.getElementById('employee-name').value.trim();
+                employeeCode = document.getElementById('employee-code').value.trim();
+                
+                if (!employeeName) {
+                    alert("Please enter your name");
+                    return;
+                }
+                
+                if (!employeeCode) {
+                    alert("Please enter your employee code");
+                    return;
+                }
+                
+                // Check if already marked attendance today
+                if (hasMarkedAttendanceToday) {
+                    alert("You have already marked attendance today. You cannot mark attendance multiple times.");
+                    return;
+                }
+                
+                // Update user info
+                userName.textContent = employeeName;
+                userId.textContent = employeeCode;
+                
+                // Show panels
+                loginSection.style.display = 'none';
+                userPanel.style.display = 'block';
+                locationPanel.style.display = 'block';
+                attendanceHistory.style.display = 'block';
+                
+                // Initialize location services
+                initLocationServices();
+            });
+            
+            // Download button event
+            downloadBtn.addEventListener('click', function() {
+                downloadAttendanceData();
+            });
+            
+            // Initialize location services
+            function initLocationServices() {
+                // Check if geolocation is available
+                if (!navigator.geolocation) {
+                    locationStatus.textContent = "Geolocation is not supported by this browser";
+                    locationStatus.className = "status-error";
+                    attendanceBtn.disabled = true;
+                    return;
+                }
+                
+                // Get location when the page loads
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        const acc = position.coords.accuracy;
+                        
+                        latitude.textContent = lat.toFixed(6);
+                        longitude.textContent = lng.toFixed(6);
+                        locationAccuracy.textContent = `${acc.toFixed(2)} meters`;
+                        
+                        // Calculate distance from office
+                        const dist = calculateDistance(lat, lng, OFFICE_LAT, OFFICE_LNG);
+                        distance.textContent = `${dist.toFixed(2)} km`;
+                        
+                        if (dist <= 0.5) { // Within 500 meters
+                            locationStatus.textContent = "Office Location Verified";
+                            locationStatus.className = "status-success";
+                            attendanceBtn.disabled = false;
+                        } else {
+                            locationStatus.textContent = "You are not at the office location";
+                            locationStatus.className = "status-error";
+                            attendanceBtn.disabled = true;
+                        }
+                    },
+                    function(error) {
+                        console.error("Error getting location:", error);
+                        let errorMsg = "Error getting location: ";
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                errorMsg += "Permission denied. Please allow location access.";
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                errorMsg += "Position unavailable";
+                                break;
+                            case error.TIMEOUT:
+                                errorMsg += "Request timeout";
+                                break;
+                            default:
+                                errorMsg += "Unknown error";
+                        }
+                        
+                        locationStatus.textContent = errorMsg;
+                        locationStatus.className = "status-error";
+                        attendanceBtn.disabled = true;
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 60000
+                    }
+                );
+            }
+            
+            // Attendance button event
+            attendanceBtn.addEventListener('click', function() {
+                attendanceBtn.disabled = true;
+                attendanceStatus.textContent = "Marking attendance...";
+                attendanceStatus.className = "attendance-status";
+                
+                // Get current time
+                const now = new Date();
+                const dateStr = now.toISOString().split('T')[0];
+                const timeStr = now.toLocaleTimeString('en-US', { 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    hour12: true 
+                });
+                
+                // Create attendance record
+                const record = {
+                    date: dateStr,
+                    time: timeStr,
+                    name: employeeName,
+                    employeeCode: employeeCode,
+                    status: "Present",
+                    location: "Office (Verified)",
+                    verification: "Successful",
+                    timestamp: now.getTime()
+                };
+                
+                // Add to attendance data
+                attendanceData.push(record);
+                
+                // Save to localStorage
+                localStorage.setItem('flemingoAttendanceData', JSON.stringify(attendanceData));
+                
+                // Update UI
+                setTimeout(function() {
+                    attendanceStatus.textContent = "Attendance marked successfully!";
+                    attendanceStatus.className = "attendance-status status-success";
+                    
+                    // Update today's status
+                    todayStatus.textContent = "Present";
+                    todayStatus.className = "status-success";
+                    
+                    // Set current time
+                    attendanceTime.textContent = timeStr;
+                    
+                    // Update table
+                    updateAttendanceTable();
+                    
+                    // Set flag to prevent multiple attendance
+                    hasMarkedAttendanceToday = true;
+                }, 1500);
+            });
+            
+            // Update attendance table
+            function updateAttendanceTable() {
+                const recordsTable = document.getElementById('attendance-records');
+                recordsTable.innerHTML = '';
+                
+                // Sort by timestamp descending (newest first)
+                const sortedData = [...attendanceData].sort((a, b) => b.timestamp - a.timestamp);
+                
+                // Show only latest 10 records
+                const displayData = sortedData.slice(0, 10);
+                
+                displayData.forEach(record => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${record.date}</td>
+                        <td>${record.time}</td>
+                        <td>${record.name}</td>
+                        <td>${record.employeeCode}</td>
+                        <td>${record.status}</td>
+                        <td>${record.location}</td>
+                        <td><span class="status-success">${record.verification}</span></td>
+                    `;
+                    recordsTable.appendChild(row);
+                });
+            }
+            
+            // Download attendance data as CSV
+            function downloadAttendanceData() {
+                if (attendanceData.length === 0) {
+                    alert("No attendance data to download");
+                    return;
+                }
+                
+                // Create CSV content
+                let csvContent = "Date,Time,Name,Employee Code,Status,Location,Verification\n";
+                
+                attendanceData.forEach(record => {
+                    csvContent += `"${record.date}","${record.time}","${record.name}","${record.employeeCode}","${record.status}","${record.location}","${record.verification}"\n`;
+                });
+                
+                // Create download link
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                const date = new Date().toISOString().split('T')[0];
+                
+                link.setAttribute("href", url);
+                link.setAttribute("download", `flemingo_attendance_${date}.csv`);
+                link.style.visibility = 'hidden';
+                
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+            
+            // Function to calculate distance between two coordinates using Haversine formula
+            function calculateDistance(lat1, lon1, lat2, lon2) {
+                const R = 6371; // Earth's radius in kilometers
+                const dLat = deg2rad(lat2 - lat1);
+                const dLon = deg2rad(lon2 - lon1);
+                const a = 
+                    Math.sin(dLat/2) * Math.sin(dLat/2) +
+                    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
+                    Math.sin(dLon/2) * Math.sin(dLon/2); 
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+                const distance = R * c; // Distance in km
+                return distance;
+            }
+            
+            function deg2rad(deg) {
+                return deg * (Math.PI/180);
+            }
+        });
+    </script>
+</body>
+</html>
