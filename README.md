@@ -1,1 +1,1 @@
-# flamigo
+# flamingo
