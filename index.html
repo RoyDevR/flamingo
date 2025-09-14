@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flemingo Telecaller Attendance</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <style>
         * {
             margin: 0;
@@ -24,7 +25,7 @@
         
         .container {
             width: 100%;
-            max-width: 1000px;
+            max-width: 1200px;
             background: white;
             border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
@@ -221,6 +222,10 @@
             color: #dc3545;
         }
         
+        .status-warning {
+            color: #ffc107;
+        }
+        
         .location-panel {
             flex: 1;
             min-width: 300px;
@@ -272,7 +277,7 @@
         
         .map-container {
             margin-top: 20px;
-            height: 200px;
+            height: 300px;
             background: #dde5f0;
             border-radius: 8px;
             display: flex;
@@ -284,11 +289,10 @@
             position: relative;
         }
         
-        .static-map {
+        #map {
             width: 100%;
             height: 100%;
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200" viewBox="0 0 400 200"><rect width="400" height="200" fill="%23dde5f0"/><text x="200" y="100" font-family="Arial" font-size="16" fill="%231a4f8e" text-anchor="middle">Map visualization not available</text></svg>');
-            background-size: cover;
+            border-radius: 8px;
         }
         
         .office-address {
@@ -366,6 +370,67 @@
             color: #666;
             font-size: 14px;
             border-top: 1px solid #e1e5eb;
+        }
+        
+        .stats-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            flex: 1;
+            min-width: 150px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1a4f8e;
+            margin: 5px 0;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            background: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1000;
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            border-left: 4px solid #28a745;
+        }
+        
+        .notification.error {
+            border-left: 4px solid #dc3545;
+        }
+        
+        .notification.warning {
+            border-left: 4px solid #ffc107;
         }
         
         /* Responsive adjustments */
@@ -461,6 +526,10 @@
                 padding: 14px 30px;
                 font-size: 16px;
             }
+            
+            .map-container {
+                height: 250px;
+            }
         }
         
         @media (max-width: 350px) {
@@ -490,6 +559,10 @@
                 padding: 12px 25px;
                 font-size: 14px;
             }
+            
+            .map-container {
+                height: 200px;
+            }
         }
     </style>
 </head>
@@ -516,6 +589,24 @@
                         <input type="text" id="employee-code" placeholder="Enter your employee code">
                     </div>
                     <button class="login-btn" id="login-btn">Login</button>
+                </div>
+            </div>
+            
+            <div class="stats-container" id="stats-container" style="display: none;">
+                <div class="stat-card">
+                    <div class="stat-label">This Month</div>
+                    <div class="stat-value" id="month-count">0</div>
+                    <div class="stat-label">Attendance Days</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Last Attendance</div>
+                    <div class="stat-value" id="last-date">--/--</div>
+                    <div class="stat-label" id="last-time">--:--</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Office Distance</div>
+                    <div class="stat-value" id="stats-distance">-</div>
+                    <div class="stat-label">Kilometers</div>
                 </div>
             </div>
             
@@ -561,7 +652,7 @@
                         </div>
                         
                         <div class="map-container">
-                            <div class="static-map"></div>
+                            <div id="map"></div>
                         </div>
                         
                         <div class="office-address">
@@ -575,9 +666,14 @@
             <div class="attendance-history" id="attendance-history">
                 <div class="history-header">
                     <h2>Recent Attendance Records</h2>
-                    <button class="download-btn" id="download-data">
-                        <i class="fas fa-download"></i> Download Data
-                    </button>
+                    <div>
+                        <button class="download-btn" id="download-data">
+                            <i class="fas fa-download"></i> Download Data
+                        </button>
+                        <button class="download-btn" id="clear-data" style="background: #dc3545; margin-left: 10px;">
+                            <i class="fas fa-trash"></i> Clear Data
+                        </button>
+                    </div>
                 </div>
                 <table>
                     <thead>
@@ -602,6 +698,12 @@
         </div>
     </div>
 
+    <div class="notification" id="notification">
+        <i class="fas fa-info-circle"></i>
+        <span id="notification-message"></span>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script>
         // Updated office coordinates
         const OFFICE_LAT = 19.4109519;
@@ -610,11 +712,15 @@
         let employeeCode = "";
         let attendanceData = [];
         let hasMarkedAttendanceToday = false;
+        let map = null;
+        let userMarker = null;
+        let officeMarker = null;
 
         document.addEventListener('DOMContentLoaded', function() {
             const loginBtn = document.getElementById('login-btn');
             const attendanceBtn = document.getElementById('mark-attendance');
             const downloadBtn = document.getElementById('download-data');
+            const clearBtn = document.getElementById('clear-data');
             const attendanceStatus = document.getElementById('attendance-status');
             const locationStatus = document.getElementById('location-status');
             const locationAccuracy = document.getElementById('location-accuracy');
@@ -630,6 +736,13 @@
             const userPanel = document.getElementById('user-panel');
             const locationPanel = document.getElementById('location-panel');
             const attendanceHistory = document.getElementById('attendance-history');
+            const statsContainer = document.getElementById('stats-container');
+            const monthCount = document.getElementById('month-count');
+            const lastDate = document.getElementById('last-date');
+            const lastTime = document.getElementById('last-time');
+            const statsDistance = document.getElementById('stats-distance');
+            const notification = document.getElementById('notification');
+            const notificationMessage = document.getElementById('notification-message');
             
             // Set current date
             const now = new Date();
@@ -640,11 +753,15 @@
                 year: 'numeric'
             });
             
+            // Initialize map
+            initMap();
+            
             // Load attendance data from localStorage
             const savedData = localStorage.getItem('flemingoAttendanceData');
             if (savedData) {
                 attendanceData = JSON.parse(savedData);
                 updateAttendanceTable();
+                updateStats();
                 
                 // Check if user has already marked attendance today
                 const employeeCodeInput = document.getElementById('employee-code');
@@ -664,18 +781,18 @@
                 employeeCode = document.getElementById('employee-code').value.trim();
                 
                 if (!employeeName) {
-                    alert("Please enter your name");
+                    showNotification("Please enter your name", "error");
                     return;
                 }
                 
                 if (!employeeCode) {
-                    alert("Please enter your employee code");
+                    showNotification("Please enter your employee code", "error");
                     return;
                 }
                 
                 // Check if already marked attendance today
                 if (hasMarkedAttendanceToday) {
-                    alert("You have already marked attendance today. You cannot mark attendance multiple times.");
+                    showNotification("You have already marked attendance today. You cannot mark attendance multiple times.", "warning");
                     return;
                 }
                 
@@ -685,6 +802,7 @@
                 
                 // Show panels
                 loginSection.style.display = 'none';
+                statsContainer.style.display = 'flex';
                 userPanel.style.display = 'block';
                 locationPanel.style.display = 'block';
                 attendanceHistory.style.display = 'block';
@@ -697,6 +815,62 @@
             downloadBtn.addEventListener('click', function() {
                 downloadAttendanceData();
             });
+            
+            // Clear data button event
+            clearBtn.addEventListener('click', function() {
+                if (confirm("Are you sure you want to clear all attendance data? This action cannot be undone.")) {
+                    clearAttendanceData();
+                }
+            });
+            
+            // Initialize map
+            function initMap() {
+                map = L.map('map').setView([OFFICE_LAT, OFFICE_LNG], 15);
+                
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                }).addTo(map);
+                
+                // Add office marker
+                officeMarker = L.marker([OFFICE_LAT, OFFICE_LNG])
+                    .addTo(map)
+                    .bindPopup('Flemingo Office')
+                    .openPopup();
+                
+                // Add office circle
+                L.circle([OFFICE_LAT, OFFICE_LNG], {
+                    color: '#1a4f8e',
+                    fillColor: '#1a4f8e',
+                    fillOpacity: 0.1,
+                    radius: 500
+                }).addTo(map);
+            }
+            
+            // Update user location on map
+            function updateMap(lat, lng) {
+                if (userMarker) {
+                    map.removeLayer(userMarker);
+                }
+                
+                userMarker = L.marker([lat, lng])
+                    .addTo(map)
+                    .bindPopup('Your Location')
+                    .openPopup();
+                
+                // Pan map to user location
+                map.panTo([lat, lng]);
+            }
+            
+            // Show notification
+            function showNotification(message, type) {
+                notification.className = 'notification ' + type;
+                notificationMessage.textContent = message;
+                notification.classList.add('show');
+                
+                setTimeout(function() {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
             
             // Initialize location services
             function initLocationServices() {
@@ -719,9 +893,13 @@
                         longitude.textContent = lng.toFixed(6);
                         locationAccuracy.textContent = `${acc.toFixed(2)} meters`;
                         
+                        // Update map
+                        updateMap(lat, lng);
+                        
                         // Calculate distance from office
                         const dist = calculateDistance(lat, lng, OFFICE_LAT, OFFICE_LNG);
                         distance.textContent = `${dist.toFixed(2)} km`;
+                        statsDistance.textContent = `${dist.toFixed(2)}`;
                         
                         if (dist <= 0.5) { // Within 500 meters
                             locationStatus.textContent = "Office Location Verified";
@@ -731,6 +909,7 @@
                             locationStatus.textContent = "You are not at the office location";
                             locationStatus.className = "status-error";
                             attendanceBtn.disabled = true;
+                            showNotification("You must be within 500m of the office to mark attendance", "error");
                         }
                     },
                     function(error) {
@@ -753,6 +932,7 @@
                         locationStatus.textContent = errorMsg;
                         locationStatus.className = "status-error";
                         attendanceBtn.disabled = true;
+                        showNotification(errorMsg, "error");
                     },
                     {
                         enableHighAccuracy: true,
@@ -806,11 +986,15 @@
                     // Set current time
                     attendanceTime.textContent = timeStr;
                     
-                    // Update table
+                    // Update table and stats
                     updateAttendanceTable();
+                    updateStats();
                     
                     // Set flag to prevent multiple attendance
                     hasMarkedAttendanceToday = true;
+                    
+                    // Show success notification
+                    showNotification("Attendance marked successfully!", "success");
                 }, 1500);
             });
             
@@ -839,10 +1023,43 @@
                 });
             }
             
+            // Update stats
+            function updateStats() {
+                if (attendanceData.length === 0) return;
+                
+                // Get current month and year
+                const now = new Date();
+                const currentMonth = now.getMonth();
+                const currentYear = now.getFullYear();
+                
+                // Filter records for current month
+                const monthRecords = attendanceData.filter(record => {
+                    const recordDate = new Date(record.timestamp);
+                    return recordDate.getMonth() === currentMonth && 
+                           recordDate.getFullYear() === currentYear;
+                });
+                
+                // Update month count
+                monthCount.textContent = monthRecords.length;
+                
+                // Get latest record
+                const latestRecord = attendanceData.reduce((latest, record) => {
+                    return record.timestamp > latest.timestamp ? record : latest;
+                }, attendanceData[0]);
+                
+                // Update last attendance
+                const lastDateObj = new Date(latestRecord.timestamp);
+                lastDate.textContent = lastDateObj.toLocaleDateString('en-IN', {
+                    day: '2-digit',
+                    month: '2-digit'
+                });
+                lastTime.textContent = latestRecord.time;
+            }
+            
             // Download attendance data as CSV
             function downloadAttendanceData() {
                 if (attendanceData.length === 0) {
-                    alert("No attendance data to download");
+                    showNotification("No attendance data to download", "warning");
                     return;
                 }
                 
@@ -866,6 +1083,17 @@
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
+                
+                showNotification("Attendance data downloaded successfully", "success");
+            }
+            
+            // Clear attendance data
+            function clearAttendanceData() {
+                attendanceData = [];
+                localStorage.removeItem('flemingoAttendanceData');
+                updateAttendanceTable();
+                updateStats();
+                showNotification("All attendance data has been cleared", "success");
             }
             
             // Function to calculate distance between two coordinates using Haversine formula
