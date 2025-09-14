@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flemingo Telecaller Attendance</title>
+    <title>flamingo Telecaller Attendance</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <style>
@@ -569,7 +569,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <div class="logo">FLEMINGO</div>
+            <div class="logo">FLAMINGO</div>
             <div>
                 <h1>Telecaller Attendance System</h1>
                 <p>Mark your attendance with location verification</p>
@@ -694,7 +694,7 @@
         </div>
         
         <div class="footer">
-            <p>© 2023 Flemingo Telecaller Attendance System | Preventing fraudulent attendance</p>
+            <p>© 2023 flamingo Telecaller Attendance System | Preventing fraudulent attendance</p>
         </div>
     </div>
 
@@ -757,7 +757,7 @@
             initMap();
             
             // Load attendance data from localStorage
-            const savedData = localStorage.getItem('flemingoAttendanceData');
+            const savedData = localStorage.getItem('flamingoAttendanceData');
             if (savedData) {
                 attendanceData = JSON.parse(savedData);
                 updateAttendanceTable();
@@ -834,7 +834,7 @@
                 // Add office marker
                 officeMarker = L.marker([OFFICE_LAT, OFFICE_LNG])
                     .addTo(map)
-                    .bindPopup('Flemingo Office')
+                    .bindPopup('flamingo Office')
                     .openPopup();
                 
                 // Add office circle
@@ -972,7 +972,7 @@
                 attendanceData.push(record);
                 
                 // Save to localStorage
-                localStorage.setItem('flemingoAttendanceData', JSON.stringify(attendanceData));
+                localStorage.setItem('flamingoAttendanceData', JSON.stringify(attendanceData));
                 
                 // Update UI
                 setTimeout(function() {
@@ -1077,7 +1077,7 @@
                 const date = new Date().toISOString().split('T')[0];
                 
                 link.setAttribute("href", url);
-                link.setAttribute("download", `flemingo_attendance_${date}.csv`);
+                link.setAttribute("download", `flamingo_attendance_${date}.csv`);
                 link.style.visibility = 'hidden';
                 
                 document.body.appendChild(link);
@@ -1090,7 +1090,7 @@
             // Clear attendance data
             function clearAttendanceData() {
                 attendanceData = [];
-                localStorage.removeItem('flemingoAttendanceData');
+                localStorage.removeItem('flamingoAttendanceData');
                 updateAttendanceTable();
                 updateStats();
                 showNotification("All attendance data has been cleared", "success");
